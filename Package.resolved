@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/swift-aws/aws-sdk-swift",
         "state": {
           "branch": "return_futures",
-          "revision": "f335df92e349f98d1b4dee07aa82d501c7bf3a42",
+          "revision": "5f7255b9b4c5de3e1846ff00b8649cf750113500",
           "version": null
         }
       },
@@ -15,7 +15,7 @@
         "repositoryURL": "https://github.com/swift-aws/aws-sdk-swift-core",
         "state": {
           "branch": "invokeAsync",
-          "revision": "864dc583020eb8044c7f998b8944848e4cf4997f",
+          "revision": "967328b0773acdc40fc231e8dcb441aa7ca51bd5",
           "version": null
         }
       },
@@ -33,8 +33,8 @@
         "repositoryURL": "https://github.com/vapor/core.git",
         "state": {
           "branch": null,
-          "revision": "02f1d0d0eabe68f10d1efa0decdfa0e6e737e985",
-          "version": "3.8.0"
+          "revision": "57368d4092f92df3131e5968c8ed24a3c7361ec0",
+          "version": "3.8.1"
         }
       },
       {
@@ -51,8 +51,8 @@
         "repositoryURL": "https://github.com/vapor/fluent",
         "state": {
           "branch": null,
-          "revision": "3776a0f623e08b413e878f282a70e8952651c91f",
-          "version": "3.1.3"
+          "revision": "b915c321c6f9e83743ee5efa35a30895e1b02e51",
+          "version": "3.2.0"
         }
       },
       {
@@ -96,8 +96,8 @@
         "repositoryURL": "https://github.com/apple/swift-nio.git",
         "state": {
           "branch": null,
-          "revision": "29a9f2aca71c8afb07e291336f1789337ce235dd",
-          "version": "1.13.2"
+          "revision": "ba7970fe396e8198b84c6c1b44b38a1d4e2eb6bd",
+          "version": "1.14.1"
         }
       },
       {

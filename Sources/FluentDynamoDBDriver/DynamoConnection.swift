@@ -9,7 +9,8 @@ import DatabaseKit
 import DynamoDB
 
 /// TODO(jmsmith): Can we get away without a connection since that doesn't technically exist?
-public final class DynamoConnection: BasicWorker, DatabaseConnection, DatabaseQueryable {
+public final class DynamoConnection: BasicWorker, DatabaseConnection {
+    
     /// See `DatabaseConnection`.
     public typealias Database = DynamoDatabase
 
@@ -43,9 +44,51 @@ public final class DynamoConnection: BasicWorker, DatabaseConnection, DatabaseQu
         self.eventLoop = worker.eventLoop
         self.handle = database.openConnection()
     }
+}
+
+extension DynamoConnection: DatabaseQueryable {
+    public typealias Query = Database.Query
     
-    // DatabaseQueryable
-    public typealias Query = <#type#>
+    public typealias Output = Database.Output
     
-    public typealias Output = <#type#>
+    public func query(_ query: Query, _ handler: @escaping (Output) throws -> ()) -> Future<Void>{
+        let result = self.eventLoop.newPromise(of: Void.self)
+        self.eventLoop.execute {
+        switch query.action {
+        case .get:
+            let attributeValue = DynamoDB.AttributeValue.init(m: nil, null: nil, ss: nil, b: nil, s: query.keyValue, l: nil, bool: nil, ns: nil, bs: nil, n: nil)
+            let inputItem = DynamoDB.GetItemInput(key: [query.keyName: attributeValue], tableName: query.table)
+            do {
+                let response = try self.handle.getItem(inputItem)
+                let _ = response.map { output in
+                    if let item = output.item {
+                        try handler(DynamoOutput(result: item))
+                    }
+                    result.succeed()
+                }
+            } catch {
+                result.fail(error: error)
+            }
+        case .set:
+            let lockKeyAttribute = DynamoDB.AttributeValue(m: nil, null: nil, ss: nil, b: nil, s: query.keyValue, l: nil, bool: nil, ns: nil, bs: nil, n: nil)
+            let input = DynamoDB.PutItemInput(returnConsumedCapacity: nil, conditionalOperator: nil, conditionExpression: nil, tableName: query.table, expressionAttributeValues: nil, item: [query.keyName : lockKeyAttribute], expected: nil, returnValues: nil, returnItemCollectionMetrics: nil, expressionAttributeNames: nil)
+            do {
+                let response = try self.handle.putItem(input)
+                let _ = response.map { output in
+                    if let attributes = output.attributes {
+                        try handler(DynamoOutput(result: attributes))
+                    }
+                    result.succeed()
+                }
+
+            } catch {
+                result.fail(error: error)
+            }
+            print("set")
+        case .delete:
+            print("delete")
+        }
+        }
+        return result.futureResult
+    }
 }

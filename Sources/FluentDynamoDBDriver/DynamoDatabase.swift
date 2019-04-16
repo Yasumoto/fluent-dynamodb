@@ -10,6 +10,8 @@ import DatabaseKit
 
 public final class DynamoDatabase: Database {
     public typealias Connection = DynamoConnection
+    public typealias Query = DynamoQuery
+    public typealias Output = DynamoOutput
 
     private let config: DynamoConfiguration
 
@@ -29,5 +31,11 @@ public final class DynamoDatabase: Database {
     public init(config: DynamoConfiguration) {
         self.config = config
     }
+}
 
+extension DatabaseIdentifier {
+    /// Default identifier for `DynamoDatabase`.
+    public static var dynamo: DatabaseIdentifier<DynamoDatabase> {
+        return .init("dynamo")
+    }
 }

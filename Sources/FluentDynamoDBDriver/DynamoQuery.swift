@@ -14,4 +14,11 @@ public struct DynamoQuery {
     public let table: String
     public let keyName: String
     public let keyValue: String
+
+    public init(action: DynamoQueryAction, table: String, keyName: String, keyValue: String) {
+        self.action = action
+        self.table = table
+        self.keyName = keyName
+        self.keyValue = keyValue
+    }
 }

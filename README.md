@@ -1,3 +1,3 @@
 # FluentDynamoDBDriver
 
-A description of this package.
+Support for Amazon's DynamoDB with Fluent & Vapor.

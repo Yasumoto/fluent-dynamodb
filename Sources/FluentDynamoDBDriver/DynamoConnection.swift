@@ -53,41 +53,44 @@ extension DynamoConnection: DatabaseQueryable {
     
     public func query(_ query: Query, _ handler: @escaping (Output) throws -> ()) -> Future<Void>{
         let result = self.eventLoop.newPromise(of: Void.self)
+        let attributeValue = DynamoDB.AttributeValue(m: nil, null: nil, ss: nil, b: nil, s: query.keyValue, l: nil, bool: nil, ns: nil, bs: nil, n: nil)
         self.eventLoop.execute {
-        switch query.action {
-        case .get:
-            let attributeValue = DynamoDB.AttributeValue.init(m: nil, null: nil, ss: nil, b: nil, s: query.keyValue, l: nil, bool: nil, ns: nil, bs: nil, n: nil)
-            let inputItem = DynamoDB.GetItemInput(key: [query.keyName: attributeValue], tableName: query.table)
             do {
-                let response = try self.handle.getItem(inputItem)
-                let _ = response.map { output in
-                    if let item = output.item {
-                        try handler(DynamoOutput(result: item))
+                switch query.action {
+                case .get:
+                    let inputItem = DynamoDB.GetItemInput(key: [query.keyName: attributeValue], tableName: query.table)
+                    let response = try self.handle.getItem(inputItem)
+                    let _ = response.map { output in
+                        print("Getting: \(output)")
+                        if let item = output.item {
+                            try handler(DynamoOutput(result: item))
+                        }
+                        result.succeed()
                     }
-                    result.succeed()
+                case .set:
+                    let input = DynamoDB.PutItemInput(returnConsumedCapacity: nil, conditionalOperator: nil, conditionExpression: nil, tableName: query.table, expressionAttributeValues: nil, item: [query.keyName : attributeValue], expected: nil, returnValues: nil, returnItemCollectionMetrics: nil, expressionAttributeNames: nil)
+                    let response = try self.handle.putItem(input)
+                    let _ = response.map { output in
+                        print("Setting: \(output)")
+                        if let attributes = output.attributes {
+                            try handler(DynamoOutput(result: attributes))
+                        }
+                        result.succeed()
+                    }
+                case .delete:
+                    let input = DynamoDB.DeleteItemInput(key: [query.keyName : attributeValue], tableName: query.table)
+                    let response = try self.handle.deleteItem(input)
+                    let _ = response.map { output in
+                        print("Deleting: \(output)")
+                        if let attributes = output.attributes {
+                            try handler(DynamoOutput(result: attributes))
+                        }
+                        result.succeed()
+                    }
                 }
             } catch {
                 result.fail(error: error)
             }
-        case .set:
-            let lockKeyAttribute = DynamoDB.AttributeValue(m: nil, null: nil, ss: nil, b: nil, s: query.keyValue, l: nil, bool: nil, ns: nil, bs: nil, n: nil)
-            let input = DynamoDB.PutItemInput(returnConsumedCapacity: nil, conditionalOperator: nil, conditionExpression: nil, tableName: query.table, expressionAttributeValues: nil, item: [query.keyName : lockKeyAttribute], expected: nil, returnValues: nil, returnItemCollectionMetrics: nil, expressionAttributeNames: nil)
-            do {
-                let response = try self.handle.putItem(input)
-                let _ = response.map { output in
-                    if let attributes = output.attributes {
-                        try handler(DynamoOutput(result: attributes))
-                    }
-                    result.succeed()
-                }
-
-            } catch {
-                result.fail(error: error)
-            }
-            print("set")
-        case .delete:
-            print("delete")
-        }
         }
         return result.futureResult
     }

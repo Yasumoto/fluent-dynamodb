@@ -50,48 +50,36 @@ extension DynamoConnection: DatabaseQueryable {
     public typealias Query = Database.Query
     
     public typealias Output = Database.Output
-    
+
+    /// Note that if the `handler` blocks, the promise will never succeed.
+    /// This may be unexpected behavior.
     public func query(_ query: Query, _ handler: @escaping (Output) throws -> ()) -> Future<Void>{
-        let result = self.eventLoop.newPromise(of: Void.self)
         let attributeValue = DynamoDB.AttributeValue(m: nil, null: nil, ss: nil, b: nil, s: query.keyValue, l: nil, bool: nil, ns: nil, bs: nil, n: nil)
-        self.eventLoop.execute {
-            do {
-                switch query.action {
-                case .get:
-                    let inputItem = DynamoDB.GetItemInput(key: [query.keyName: attributeValue], tableName: query.table)
-                    let response = try self.handle.getItem(inputItem)
-                    let _ = response.map { output in
-                        print("Getting: \(output)")
-                        if let item = output.item {
-                            try handler(DynamoOutput(result: item))
-                        }
-                        result.succeed()
-                    }
-                case .set:
-                    let input = DynamoDB.PutItemInput(returnConsumedCapacity: nil, conditionalOperator: nil, conditionExpression: nil, tableName: query.table, expressionAttributeValues: nil, item: [query.keyName : attributeValue], expected: nil, returnValues: nil, returnItemCollectionMetrics: nil, expressionAttributeNames: nil)
-                    let response = try self.handle.putItem(input)
-                    let _ = response.map { output in
-                        print("Setting: \(output)")
-                        if let attributes = output.attributes {
-                            try handler(DynamoOutput(result: attributes))
-                        }
-                        result.succeed()
-                    }
-                case .delete:
-                    let input = DynamoDB.DeleteItemInput(key: [query.keyName : attributeValue], tableName: query.table)
-                    let response = try self.handle.deleteItem(input)
-                    let _ = response.map { output in
-                        print("Deleting: \(output)")
-                        if let attributes = output.attributes {
-                            try handler(DynamoOutput(result: attributes))
-                        }
-                        result.succeed()
-                    }
+        let promise = self.eventLoop.newPromise(Void.self)
+        do {
+            switch query.action {
+            case .get:
+                let inputItem = DynamoDB.GetItemInput(key: [query.keyName: attributeValue], tableName: query.table)
+                let _ = try self.handle.getItem(inputItem).map { output in
+                    try handler(DynamoOutput(result: output.item))
+                    promise.succeed()
                 }
-            } catch {
-                result.fail(error: error)
+            case .set:
+                let input = DynamoDB.PutItemInput(returnConsumedCapacity: nil, conditionalOperator: nil, conditionExpression: nil, tableName: query.table, expressionAttributeValues: nil, item: [query.keyName : attributeValue], expected: nil, returnValues: nil, returnItemCollectionMetrics: nil, expressionAttributeNames: nil)
+                let _ = try self.handle.putItem(input).map { output in
+                    try handler(DynamoOutput(result: output.attributes))
+                    promise.succeed()
+                }
+            case .delete:
+                let input = DynamoDB.DeleteItemInput(key: [query.keyName : attributeValue], tableName: query.table)
+                let _ = try self.handle.deleteItem(input).map { output in
+                    try handler(DynamoOutput(result: output.attributes))
+                    promise.succeed()
+                }
             }
+        } catch {
+            promise.fail(error: error)
         }
-        return result.futureResult
+        return promise.futureResult
     }
 }

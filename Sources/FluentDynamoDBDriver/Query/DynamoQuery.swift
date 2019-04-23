@@ -12,13 +12,11 @@ public enum DynamoQueryAction {
 public struct DynamoQuery {
     public var action: DynamoQueryAction
     public let table: String
-    public let keyName: String
-    public let keyValue: String
+    public let key: DynamoValue
 
-    public init(action: DynamoQueryAction, table: String, keyName: String, keyValue: String) {
+    public init(action: DynamoQueryAction, table: String, key: DynamoValue) {
         self.action = action
         self.table = table
-        self.keyName = keyName
-        self.keyValue = keyValue
+        self.key = key
     }
 }

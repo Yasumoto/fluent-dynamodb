@@ -7,6 +7,7 @@
 
 import DatabaseKit
 import DynamoDB
+import Logging
 
 /// TODO(jmsmith): Can we get away without a connection since that doesn't technically exist?
 public final class DynamoConnection: BasicWorker, DatabaseConnection {
@@ -35,9 +36,12 @@ public final class DynamoConnection: BasicWorker, DatabaseConnection {
     /// This reference will ensure the DB stays alive since this connection uses
     /// it's thread pool.
     private let database: DynamoDatabase
+
+    /// If non-nil, will log queries.
+    public var logger: DatabaseLogger?
     
     internal private(set) var handle: DynamoDB!
-    
+
     internal init(database: DynamoDatabase, on worker: Worker) throws {
         self.extend = [:]
         self.database = database
@@ -54,24 +58,24 @@ extension DynamoConnection: DatabaseQueryable {
     /// Note that if the `handler` blocks, the promise will never succeed.
     /// This may be unexpected behavior.
     public func query(_ query: Query, _ handler: @escaping (Output) throws -> ()) -> Future<Void>{
-        let attributeValue = DynamoDB.AttributeValue(m: nil, null: nil, ss: nil, b: nil, s: query.keyValue, l: nil, bool: nil, ns: nil, bs: nil, n: nil)
+        self.logger?.record(query: String(describing: query))
         let promise = self.eventLoop.newPromise(Void.self)
         do {
             switch query.action {
             case .get:
-                let inputItem = DynamoDB.GetItemInput(key: [query.keyName: attributeValue], tableName: query.table)
+                let inputItem = DynamoDB.GetItemInput(key: query.key.encodedKey, tableName: query.table)
                 let _ = try self.handle.getItem(inputItem).map { output in
                     try handler(DynamoOutput(result: output.item))
                     promise.succeed()
                 }
             case .set:
-                let input = DynamoDB.PutItemInput(returnConsumedCapacity: nil, conditionalOperator: nil, conditionExpression: nil, tableName: query.table, expressionAttributeValues: nil, item: [query.keyName : attributeValue], expected: nil, returnValues: nil, returnItemCollectionMetrics: nil, expressionAttributeNames: nil)
+                let input = DynamoDB.PutItemInput(returnConsumedCapacity: nil, conditionalOperator: nil, conditionExpression: nil, tableName: query.table, expressionAttributeValues: nil, item: query.key.encodedKey, expected: nil, returnValues: nil, returnItemCollectionMetrics: nil, expressionAttributeNames: nil)
                 let _ = try self.handle.putItem(input).map { output in
                     try handler(DynamoOutput(result: output.attributes))
                     promise.succeed()
                 }
             case .delete:
-                let input = DynamoDB.DeleteItemInput(key: [query.keyName : attributeValue], tableName: query.table)
+                let input = DynamoDB.DeleteItemInput(key: query.key.encodedKey, tableName: query.table)
                 let _ = try self.handle.deleteItem(input).map { output in
                     try handler(DynamoOutput(result: output.attributes))
                     promise.succeed()

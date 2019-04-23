@@ -8,9 +8,9 @@
 import DynamoDB
 
 public struct DynamoOutput {
-    public let result: [String: DynamoDB.AttributeValue]?
+    public let result: DynamoValue?
 
     public init(result: [String: DynamoDB.AttributeValue]?) {
-        self.result = result
+        self.result = DynamoValue(attributes: result)
     }
 }

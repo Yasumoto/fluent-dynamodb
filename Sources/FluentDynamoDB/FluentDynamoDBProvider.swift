@@ -13,7 +13,7 @@ import Fluent
 /// DYNAMO_ACCCESS_KEY: AWS Access Key to write to all tables you will use
 /// DYNAMO_SECRET_KEY: Secret Key for the AWS user
 public struct FluentDynamoDBProvider: Provider {
-    func register(_ services: inout Services) throws {
+    public func register(_ services: inout Services) throws {
         try services.register(FluentProvider())
 
         let dynamoAccessKey = Environment.get("DYNAMO_ACCCESS_KEY")
@@ -22,7 +22,7 @@ public struct FluentDynamoDBProvider: Provider {
         services.register(DynamoDatabase(config: dynamoConfiguration))
     }
     
-    func didBoot(_ container: Container) throws -> EventLoopFuture<Void> {
+    public func didBoot(_ container: Container) throws -> EventLoopFuture<Void> {
         return .done(on: container)
     }
     

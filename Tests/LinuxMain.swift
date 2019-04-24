@@ -1,7 +1,7 @@
 import XCTest
 
-import FluentDynamoDBDriverTests
+import FluentDynamoDBTests
 
 var tests = [XCTestCaseEntry]()
-tests += FluentDynamoDBDriverTests.allTests()
+tests += FluentDynamoDBTests.allTests()
 XCTMain(tests)

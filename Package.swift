@@ -1,14 +1,13 @@
 // swift-tools-version:5.0
-// The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
 let package = Package(
-    name: "fluent-dynamodb-driver",
+    name: "fluent-dynamodb",
     products: [
         .library(
-            name: "FluentDynamoDBDriver",
-            targets: ["FluentDynamoDBDriver"])
+            name: "FluentDynamoDB",
+            targets: ["FluentDynamoDB"])
     ],
     dependencies: [
         // *️⃣  ORM to integrate with Vapor
@@ -22,10 +21,10 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "FluentDynamoDBDriver",
+            name: "FluentDynamoDB",
             dependencies: ["DynamoDB", "Fluent"]),
         .testTarget(
-            name: "FluentDynamoDBDriverTests",
-            dependencies: ["FluentDynamoDBDriver"])
+            name: "FluentDynamoDBTests",
+            dependencies: ["FluentDynamoDB"])
     ]
 )

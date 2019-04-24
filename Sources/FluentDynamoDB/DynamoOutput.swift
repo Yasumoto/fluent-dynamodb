@@ -1,6 +1,6 @@
 //
 //  DynamoOutput.swift
-//  FluentDynamoDBDriver
+//  FluentDynamoDB
 //
 //  Created by Joe Smith on 4/12/19.
 //

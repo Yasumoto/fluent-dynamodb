@@ -1,6 +1,6 @@
 //
 //  DynamoConfiguration.swift
-//  fluent-dynamodb-driver
+//  fluent-dynamodb
 //
 //  Created by Joe Smith on 4/9/19.
 //

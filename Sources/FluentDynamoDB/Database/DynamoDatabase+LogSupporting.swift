@@ -1,6 +1,6 @@
 //
 //  DynamoDatabase+LogSupporting.swift
-//  FluentDynamoDBDriver
+//  FluentDynamoDB
 //
 //  Created by Joe Smith on 4/23/19.
 //

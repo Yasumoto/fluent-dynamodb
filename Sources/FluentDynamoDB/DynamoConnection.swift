@@ -1,13 +1,12 @@
 //
 //  DynamoConnection.swift
-//  fluent-dynamodb-driver
+//  FluentDynamoDB
 //
 //  Created by Joe Smith on 4/9/19.
 //
 
 import DatabaseKit
 import DynamoDB
-import Logging
 
 /// TODO(jmsmith): Can we get away without a connection since that doesn't technically exist?
 public final class DynamoConnection: BasicWorker, DatabaseConnection {

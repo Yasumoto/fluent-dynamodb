@@ -9,8 +9,10 @@ import Foundation
 import DynamoDB
 
 /// 🔑 Values to uniquely identify an item stored in a DynamoDB Table
-public struct DynamoValue {
-    public enum Attribute {
+public struct DynamoValue: Equatable {
+
+    /// The possible values to include in a DynamoDB value
+    public enum Attribute: Equatable {
         case mapping([String: Attribute])
         case null(Bool)
         case stringSet([String])

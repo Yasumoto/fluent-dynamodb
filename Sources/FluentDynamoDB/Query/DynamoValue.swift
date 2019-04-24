@@ -1,5 +1,5 @@
 //
-//  DynamoKey.swift
+//  DynamoValue.swift
 //  FluentDynamoDBDriver
 //
 //  Created by Joe Smith on 4/23/19.

@@ -36,6 +36,6 @@ public final class DynamoDatabase: Database {
 extension DatabaseIdentifier {
     /// Default identifier for `DynamoDatabase`.
     public static var dynamo: DatabaseIdentifier<DynamoDatabase> {
-        return .init("dynamo")
+        return "dynamo"
     }
 }

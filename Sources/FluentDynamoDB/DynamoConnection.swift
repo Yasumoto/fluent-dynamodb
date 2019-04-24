@@ -64,19 +64,19 @@ extension DynamoConnection: DatabaseQueryable {
             case .get:
                 let inputItem = DynamoDB.GetItemInput(key: query.key.encodedKey, tableName: query.table)
                 let _ = try self.handle.getItem(inputItem).map { output in
-                    try handler(DynamoOutput(result: output.item))
+                    try handler(Output(attributes: output.item))
                     promise.succeed()
                 }
             case .set:
                 let input = DynamoDB.PutItemInput(returnConsumedCapacity: nil, conditionalOperator: nil, conditionExpression: nil, tableName: query.table, expressionAttributeValues: nil, item: query.key.encodedKey, expected: nil, returnValues: nil, returnItemCollectionMetrics: nil, expressionAttributeNames: nil)
                 let _ = try self.handle.putItem(input).map { output in
-                    try handler(DynamoOutput(result: output.attributes))
+                    try handler(Output(attributes: output.attributes))
                     promise.succeed()
                 }
             case .delete:
                 let input = DynamoDB.DeleteItemInput(key: query.key.encodedKey, tableName: query.table)
                 let _ = try self.handle.deleteItem(input).map { output in
-                    try handler(DynamoOutput(result: output.attributes))
+                    try handler(DynamoValue(attributes: output.attributes))
                     promise.succeed()
                 }
             }

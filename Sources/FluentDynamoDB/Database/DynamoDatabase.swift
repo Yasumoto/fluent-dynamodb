@@ -11,7 +11,7 @@ import DatabaseKit
 public final class DynamoDatabase: Database {
     public typealias Connection = DynamoConnection
     public typealias Query = DynamoQuery
-    public typealias Output = DynamoOutput
+    public typealias Output = DynamoValue
 
     private let config: DynamoConfiguration
 

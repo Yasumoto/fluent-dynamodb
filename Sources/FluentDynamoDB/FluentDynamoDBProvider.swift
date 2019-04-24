@@ -9,9 +9,6 @@ import Fluent
 
 /// 💧 The Provider expected to be registered to easily allow
 /// usage of DynamoDB from within a Vapor application
-/// Note you MUST specify credentials via environment variables:
-/// DYNAMO_ACCCESS_KEY: AWS Access Key to write to all tables you will use
-/// DYNAMO_SECRET_KEY: Secret Key for the AWS user
 public struct FluentDynamoDBProvider: Provider {
     public func register(_ services: inout Services) throws {
         // Use Fluent if/when you get migration support

@@ -8,7 +8,7 @@
 import DatabaseKit
 import DynamoDB
 
-/// TODO(jmsmith): Can we get away without a connection since that doesn't technically exist?
+/// 💫 `DatabaseConnection` for direct queries to DynamoDB.
 public final class DynamoConnection: BasicWorker, DatabaseConnection {
     
     /// See `DatabaseConnection`.
@@ -54,35 +54,36 @@ extension DynamoConnection: DatabaseQueryable {
     
     public typealias Output = Database.Output
 
-    /// Note that if the `handler` blocks, the promise will never succeed.
-    /// This may be unexpected behavior.
+    /// 📖 Submit request to DynamoDB
+    ///
+    /// The Future signals completion, and the handler will run upon success.
+    /// Note for .set and .delete queries, the handler will be called with the *old* values
+    /// that have been replaced!
     public func query(_ query: Query, _ handler: @escaping (Output) throws -> ()) -> Future<Void>{
         self.logger?.record(query: String(describing: query))
-        let promise = self.eventLoop.newPromise(Void.self)
         do {
             switch query.action {
             case .get:
-                let inputItem = DynamoDB.GetItemInput(key: query.key.encodedKey, tableName: query.table)
-                let _ = try self.handle.getItem(inputItem).map { output in
-                    try handler(Output(attributes: output.item))
-                    promise.succeed()
+                let inputItem = DynamoDB.GetItemInput(
+                    key: query.key.encodedKey, tableName: query.table)
+                return try self.handle.getItem(inputItem).map { output in
+                    return try handler(Output(attributes: output.item))
                 }
             case .set:
-                let input = DynamoDB.PutItemInput(returnConsumedCapacity: nil, conditionalOperator: nil, conditionExpression: nil, tableName: query.table, expressionAttributeValues: nil, item: query.key.encodedKey, expected: nil, returnValues: nil, returnItemCollectionMetrics: nil, expressionAttributeNames: nil)
-                let _ = try self.handle.putItem(input).map { output in
-                    try handler(Output(attributes: output.attributes))
-                    promise.succeed()
+                let input = DynamoDB.PutItemInput(
+                    tableName: query.table, item: query.key.encodedKey, returnValues: .allOld)
+                return try self.handle.putItem(input).map { output in
+                    return try handler(Output(attributes: output.attributes))
                 }
             case .delete:
-                let input = DynamoDB.DeleteItemInput(key: query.key.encodedKey, tableName: query.table)
-                let _ = try self.handle.deleteItem(input).map { output in
-                    try handler(DynamoValue(attributes: output.attributes))
-                    promise.succeed()
+                let input = DynamoDB.DeleteItemInput(
+                    key: query.key.encodedKey, tableName: query.table, returnValues: .allOld)
+                return try self.handle.deleteItem(input).map { output in
+                    return try handler(DynamoValue(attributes: output.attributes))
                 }
             }
         } catch {
-            promise.fail(error: error)
+            return self.eventLoop.newFailedFuture(error: error)
         }
-        return promise.futureResult
     }
 }

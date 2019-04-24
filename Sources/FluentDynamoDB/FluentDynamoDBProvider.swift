@@ -14,10 +14,13 @@ import Fluent
 /// DYNAMO_SECRET_KEY: Secret Key for the AWS user
 public struct FluentDynamoDBProvider: Provider {
     public func register(_ services: inout Services) throws {
-        try services.register(FluentProvider())
+        // Use Fluent if/when you get migration support
+        try services.register(DatabaseKitProvider())
 
         // Basing this off the `PostgreSQLProvider
         // https://github.com/vapor/postgresql/blob/1.4.1/Sources/PostgreSQL/Utilities/PostgreSQLProvider.swift#L10
+        services.register(DynamoConfiguration.self)
+        services.register(DynamoDatabase.self)
         var databases = DatabasesConfig()
         databases.add(database: DynamoDatabase.self, as: .dynamo)
         services.register(databases)
@@ -30,4 +33,16 @@ public struct FluentDynamoDBProvider: Provider {
     public init() { }
 }
 
-extension DynamoDatabase: Service { }
+/// MARK: Services
+
+extension DynamoConfiguration: ServiceType {
+    public static func makeService(for container: Container) throws -> DynamoConfiguration {
+        return DynamoConfiguration(accessKeyId: nil, secretAccessKey: nil, region: nil, endpoint: nil)
+    }
+}
+
+extension DynamoDatabase: ServiceType {
+    public static func makeService(for container: Container) throws -> Self {
+        return try .init(config: container.make())
+    }
+}

@@ -16,10 +16,11 @@ public struct FluentDynamoDBProvider: Provider {
     public func register(_ services: inout Services) throws {
         try services.register(FluentProvider())
 
-        let dynamoAccessKey = Environment.get("DYNAMO_ACCCESS_KEY")
-        let dynamoPrivateKey = Environment.get("DYNAMO_SECRET_KEY")
-        let dynamoConfiguration = DynamoConfiguration(accessKeyId: dynamoAccessKey, secretAccessKey: dynamoPrivateKey, region: .useast1, endpoint: nil)
-        services.register(DynamoDatabase(config: dynamoConfiguration))
+        // Basing this off the `PostgreSQLProvider
+        // https://github.com/vapor/postgresql/blob/1.4.1/Sources/PostgreSQL/Utilities/PostgreSQLProvider.swift#L10
+        var databases = DatabasesConfig()
+        databases.add(database: DynamoDatabase.self, as: .dynamo)
+        services.register(databases)
     }
     
     public func didBoot(_ container: Container) throws -> EventLoopFuture<Void> {

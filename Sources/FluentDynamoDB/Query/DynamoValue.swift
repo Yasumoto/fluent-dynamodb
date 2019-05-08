@@ -9,10 +9,18 @@ import Foundation
 import DynamoDB
 
 /// 🔑 Values to uniquely identify an item stored in a DynamoDB Table
-public struct DynamoValue: Equatable {
+public struct DynamoValue: Codable {
 
     /// The possible values to include in a DynamoDB value
-    public enum Attribute: Equatable {
+    public enum Attribute: Codable {
+        public func encode(to encoder: Encoder) throws {
+            <#code#>
+        }
+
+        public init(from decoder: Decoder) throws {
+            <#code#>
+        }
+
         case mapping([String: Attribute])
         case null(Bool)
         case stringSet([String])

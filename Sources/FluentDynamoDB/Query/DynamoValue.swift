@@ -175,7 +175,7 @@ public struct DynamoValue: Equatable {
             number = attributeNumber
         }
 
-        return (element.key, DynamoDB.AttributeValue(m: mapping, null: null, ss: stringSet, b: binary, s: string, l: list, bool: bool, ns: numberSet, bs: binarySet, n: number))
+        return (element.key, DynamoDB.AttributeValue(b: binary, bool: bool, bs: binarySet, l: list, m: mapping, n: number, ns: numberSet, null: null, s: string, ss: stringSet))
     }
     return Dictionary(converted, uniquingKeysWith: { $1 })
     }

@@ -6,16 +6,7 @@
         "repositoryURL": "https://github.com/swift-aws/aws-sdk-swift",
         "state": {
           "branch": "return_futures",
-          "revision": "5f7255b9b4c5de3e1846ff00b8649cf750113500",
-          "version": null
-        }
-      },
-      {
-        "package": "AWSSDKSwiftCore",
-        "repositoryURL": "https://github.com/swift-aws/aws-sdk-swift-core",
-        "state": {
-          "branch": "invokeAsync",
-          "revision": "647e47d6cf9d3499ed6a50abd8fe3faee987527e",
+          "revision": "e5f02b6da4951922e8b315014492e4b6536ede7c",
           "version": null
         }
       },

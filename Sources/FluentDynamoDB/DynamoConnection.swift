@@ -71,13 +71,13 @@ extension DynamoConnection: DatabaseQueryable {
                 }
             case .set:
                 let input = DynamoDB.PutItemInput(
-                    tableName: query.table, item: query.key.encodedKey, returnValues: .allOld)
+                    item: query.key.encodedKey, returnValues: .allOld, tableName: query.table)
                 return try self.handle.putItem(input).map { output in
                     return try handler(Output(attributes: output.attributes))
                 }
             case .delete:
                 let input = DynamoDB.DeleteItemInput(
-                    key: query.key.encodedKey, tableName: query.table, returnValues: .allOld)
+                    key: query.key.encodedKey, returnValues: .allOld, tableName: query.table)
                 return try self.handle.deleteItem(input).map { output in
                     return try handler(DynamoValue(attributes: output.attributes))
                 }

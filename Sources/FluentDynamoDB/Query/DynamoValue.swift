@@ -9,18 +9,13 @@ import Foundation
 import DynamoDB
 
 /// 🔑 Values to uniquely identify an item stored in a DynamoDB Table
-public struct DynamoValue: Codable {
+public struct DynamoValue: Codable, Equatable {
+    enum DynamoValueError: Error {
+        case decodingError
+    }
 
     /// The possible values to include in a DynamoDB value
-    public enum Attribute: Codable {
-        public func encode(to encoder: Encoder) throws {
-            <#code#>
-        }
-
-        public init(from decoder: Decoder) throws {
-            <#code#>
-        }
-
+    public enum Attribute: Codable, Equatable {
         case mapping([String: Attribute])
         case null(Bool)
         case stringSet([String])
@@ -32,6 +27,88 @@ public struct DynamoValue: Codable {
         case binarySet([Data])
         /// We send over all numbers to Dynamo as Strings, and cannot use Numeric
         case number(String)
+
+        /// Encodable Support
+        public func encode(to encoder: Encoder) throws {
+            switch self {
+            case .mapping(let map):
+                var container = encoder.singleValueContainer()
+                try container.encode(map)
+            case .null(let null):
+                var container = encoder.singleValueContainer()
+                try container.encode(null)
+            case .stringSet(let strings):
+                var container = encoder.singleValueContainer()
+                try container.encode(strings)
+            case .binary(let datum):
+                var container = encoder.singleValueContainer()
+                try container.encode(datum)
+            case .string(let value):
+                var container = encoder.singleValueContainer()
+                try container.encode(value)
+            case .list(let attributes):
+                var container = encoder.singleValueContainer()
+                try container.encode(attributes)
+            case .bool(let truth):
+                var container = encoder.singleValueContainer()
+                try container.encode(truth)
+            case .numberSet(let numbers):
+                var container = encoder.singleValueContainer()
+                try container.encode(numbers)
+            case .binarySet(let data):
+                var container = encoder.singleValueContainer()
+                try container.encode(data)
+            case .number(let number):
+                var container = encoder.singleValueContainer()
+                try container.encode(number)
+            }
+        }
+
+        /// Decodable Support
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let value = try? container.decode([String: Attribute].self) {
+                self = .mapping(value)
+                return
+            }
+            if let value = try? container.decode(Bool.self) {
+                self = .null(value)
+                return
+            }
+            if let value = try? container.decode([String].self) {
+                self = .stringSet(value)
+                return
+            }
+            if let value = try? container.decode(Data.self) {
+                self = .binary(value)
+                return
+            }
+            if let value = try? container.decode(String.self) {
+                self = .string(value)
+                return
+            }
+            if let value = try? container.decode([Attribute].self) {
+                self = .list(value)
+                return
+            }
+            if let value = try? container.decode(Bool.self) {
+                self = .bool(value)
+                return
+            }
+            if let value = try? container.decode([String].self) {
+                self = .numberSet(value)
+                return
+            }
+            if let value = try? container.decode([Data].self) {
+                self = .binarySet(value)
+                return
+            }
+            if let value = try? container.decode(String.self) {
+                self = .number(value)
+                return
+            }
+            throw DynamoValue.DynamoValueError.decodingError
+        }
     }
 
     /// The friendly representation of the attributes of an item stored in DynamoDB
@@ -42,6 +119,18 @@ public struct DynamoValue: Codable {
         self.attributes = attributes
     }
 
+    /// Encodable Support — Ignore "attributes"
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(self.attributes)
+    }
+
+    /// Decodable Support — Ignore "attributes"
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let attributes = try container.decode([String: Attribute].self)
+        self = .init(attributes: attributes)
+    }
     private static func decodeAttribute(_ attribute: DynamoDB.AttributeValue) -> Attribute? {
         if let mapping = attribute.m {
             var convertedMap = [String: Attribute]()

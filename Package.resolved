@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/swift-aws/aws-sdk-swift",
         "state": {
           "branch": "return_futures",
-          "revision": "e5f02b6da4951922e8b315014492e4b6536ede7c",
+          "revision": "39d2dad34294fd888bdf2abc1eb7987102fada51",
           "version": null
         }
       },

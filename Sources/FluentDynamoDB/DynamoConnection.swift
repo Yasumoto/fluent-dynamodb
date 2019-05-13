@@ -10,7 +10,7 @@ import DynamoDB
 
 /// 💫 `DatabaseConnection` for direct queries to DynamoDB.
 public final class DynamoConnection: BasicWorker, DatabaseConnection {
-    
+
     /// See `DatabaseConnection`.
     public typealias Database = DynamoDatabase
 
@@ -24,10 +24,10 @@ public final class DynamoConnection: BasicWorker, DatabaseConnection {
         // TODO(jmsmith): The request/response nature of DynamoDB doesn't lend
         // itself well here, does it?
     }
-    
+
     /// See `DatabaseConnection`.
     public var extend: Extend
-    
+
     /// See `BasicWorker`.
     public let eventLoop: EventLoop
 
@@ -38,7 +38,7 @@ public final class DynamoConnection: BasicWorker, DatabaseConnection {
 
     /// If non-nil, will log queries.
     public var logger: DatabaseLogger?
-    
+
     internal private(set) var handle: DynamoDB!
 
     internal init(database: DynamoDatabase, on worker: Worker) throws {
@@ -51,7 +51,7 @@ public final class DynamoConnection: BasicWorker, DatabaseConnection {
 
 extension DynamoConnection: DatabaseQueryable {
     public typealias Query = Database.Query
-    
+
     public typealias Output = Database.Output
 
     /// 📖 Submit request to DynamoDB
@@ -70,15 +70,14 @@ extension DynamoConnection: DatabaseQueryable {
                     return try handler(Output(attributes: output.item))
                 }
             case .set:
-                let input = DynamoDB.PutItemInput(
-                    item: query.key.encodedKey, returnValues: .allOld, tableName: query.table)
-                return try self.handle.putItem(input).map { output in
+                let inputItem = DynamoDB.PutItemInput(item: query.key.encodedKey, returnValues: .allOld, tableName: query.table)
+                return try self.handle.putItem(inputItem).map { output in
                     return try handler(Output(attributes: output.attributes))
                 }
             case .delete:
-                let input = DynamoDB.DeleteItemInput(
+                let inputItem: DynamoDB.DeleteItemInput = DynamoDB.DeleteItemInput(
                     key: query.key.encodedKey, returnValues: .allOld, tableName: query.table)
-                return try self.handle.deleteItem(input).map { output in
+                return try self.handle.deleteItem(inputItem).map { output in
                     return try handler(DynamoValue(attributes: output.attributes))
                 }
             }

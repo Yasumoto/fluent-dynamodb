@@ -5,9 +5,18 @@
         "package": "AWSSDKSwift",
         "repositoryURL": "https://github.com/swift-aws/aws-sdk-swift",
         "state": {
-          "branch": "return_futures",
-          "revision": "39d2dad34294fd888bdf2abc1eb7987102fada51",
-          "version": null
+          "branch": null,
+          "revision": "bc557114b6c16f63780d35ac2c5c21bf5c9b8f12",
+          "version": "3.0.0"
+        }
+      },
+      {
+        "package": "AWSSDKSwiftCore",
+        "repositoryURL": "https://github.com/swift-aws/aws-sdk-swift-core.git",
+        "state": {
+          "branch": null,
+          "revision": "254c1e3f85414bf0f529f47cc081be2bd0c12c1c",
+          "version": "3.0.1"
         }
       },
       {

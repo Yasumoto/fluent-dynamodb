@@ -11,6 +11,7 @@ public enum DynamoQueryAction {
 }
 
 /// 🔎 A DynamoDB operation
+// Consider turning this into an enum to support the simple get/put vs. query method
 public struct DynamoQuery {
 
     /// Note this is a var so `get/set` can be flipped easily if desired
@@ -27,4 +28,8 @@ public struct DynamoQuery {
         self.table = table
         self.key = key
     }
+
+    /// Support for batch operations
+    // Maybe just have one `key` (and delete the below) which is `[DynamoValue]`?
+    public var keys: [DynamoValue]? = nil
 }

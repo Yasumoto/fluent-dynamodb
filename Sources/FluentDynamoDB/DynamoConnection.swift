@@ -59,7 +59,7 @@ extension DynamoConnection: DatabaseQueryable {
 
     public typealias Output = Database.Output
 
-    /// 📖 Submit request to DynamoDB
+    /// 📖 Submit request to DynamoDB for one value
     ///
     /// The Future signals completion, and the handler will run upon success.
     /// Note for .set and .delete queries, the handler will be called with the *old* values
@@ -67,21 +67,27 @@ extension DynamoConnection: DatabaseQueryable {
     public func query(_ query: Query, _ handler: @escaping (Output) throws -> ()) -> Future<Void> {
         self.logger?.record(query: String(describing: query))
         do {
+            if query.keys.count != 1 {
+                throw DynamoConnectionError.improperlyFormattedQuery("`DynamoQuery.keys` should only set one key when requesting a single value.")
+            }
+            guard let requestedKey = query.keys.first?.encodedKey else {
+                throw DynamoConnectionError.improperlyFormattedQuery("`DynamoQuery.keys` should only set one `DynamoValue` when requesting a single value.")
+            }
             switch query.action {
             case .get:
                 let inputItem = DynamoDB.GetItemInput(
-                    key: query.key.encodedKey, tableName: query.table)
+                    key: requestedKey, tableName: query.table)
                 return try self.handle.getItem(inputItem).map { output in
                     return try handler(Output(attributes: output.item))
                 }
             case .set:
-                let inputItem = DynamoDB.PutItemInput(item: query.key.encodedKey, returnValues: .allOld, tableName: query.table)
+                let inputItem = DynamoDB.PutItemInput(item: requestedKey, returnValues: .allOld, tableName: query.table)
                 return try self.handle.putItem(inputItem).map { output in
                     return try handler(Output(attributes: output.attributes))
                 }
             case .delete:
                 let inputItem: DynamoDB.DeleteItemInput = DynamoDB.DeleteItemInput(
-                    key: query.key.encodedKey, returnValues: .allOld, tableName: query.table)
+                    key: requestedKey, returnValues: .allOld, tableName: query.table)
                 return try self.handle.deleteItem(inputItem).map { output in
                     return try handler(DynamoValue(attributes: output.attributes))
                 }
@@ -95,24 +101,24 @@ extension DynamoConnection: DatabaseQueryable {
     /// 🧳 Batch request for several items in DynamoDB
     ///
     /// This takes advantage of the `Batch` operations in Dynamo to operate on several values at
-    /// once.
+    /// once. If only one key is specified, then the non-batch version will be used instead
+    /// to retrieve that value.
     ///
     /// - Parameters:
-    ///     - query: The DynamoQuery used to request items. You *must* set `DynamoQuery.keys`!
+    ///     - query: The DynamoQuery used to request items.
     ///
     /// - Returns:
     ///     EventLoopFuture with a list of `DynamoValue`s from the table in the `DynamoQuery`.
     public func query(_ query: Query) -> Future<[Output]> {
         self.logger?.record(query: String(describing: query))
+        if query.keys.count == 1 {
+            var values =  [DynamoValue]()
+            return self.query(query) { values.append($0) }.map { return values }
+        }
         do {
             switch query.action {
             case .get:
-                guard let keys = query.keys else {
-                    // Probably a better way to flip between a query for one item vs. several,
-                    // maybe `DynamoQuery.key` is always a list?
-                    throw DynamoConnectionError.improperlyFormattedQuery("Please set `DynamoQuery.keys` to query multiple items.")
-                }
-                let attributes = keys.map { (key: DynamoValue) -> [String: DynamoDB.AttributeValue] in
+                let attributes = query.keys.map { (key: DynamoValue) -> [String: DynamoDB.AttributeValue] in
                     key.encodedKey
                 }
                 let keysAndAttributes = DynamoDB.KeysAndAttributes(keys: attributes)

@@ -86,11 +86,13 @@ extension DynamoConnection: DatabaseQueryable {
                     return try handler(Output(attributes: output.attributes))
                 }
             case .delete:
-                let inputItem: DynamoDB.DeleteItemInput = DynamoDB.DeleteItemInput(
+                let inputItem = DynamoDB.DeleteItemInput(
                     key: requestedKey, returnValues: .allOld, tableName: query.table)
                 return try self.handle.deleteItem(inputItem).map { output in
                     return try handler(DynamoValue(attributes: output.attributes))
                 }
+            case .filter:
+                return self.eventLoop.newFailedFuture(error: DynamoConnectionError.notImplementedYet)
             }
         } catch {
             return self.eventLoop.newFailedFuture(error: error)
@@ -136,7 +138,20 @@ extension DynamoConnection: DatabaseQueryable {
 
             case .delete:
                 throw DynamoConnectionError.notImplementedYet
+            case .filter:
+                let queryInput = DynamoDB.QueryInput(
+                    expressionAttributeNames: query.expressionAttributeNames,
+                    expressionAttributeValues: query.expressionAttributeValues,
+                    indexName: query.index,
+                    keyConditionExpression: query.keyConditionExpression,
+                    tableName: query.table)
+                return try self.handle.query(queryInput).map { (output: DynamoDB.QueryOutput) in
+                    return output.items?.compactMap { (item: [String: DynamoDB.AttributeValue]) -> DynamoValue in
+                        return DynamoValue(attributes: item)
+                    } ?? [DynamoValue]()
+                }
             }
+
         } catch {
             return self.eventLoop.newFailedFuture(error: error)
         }

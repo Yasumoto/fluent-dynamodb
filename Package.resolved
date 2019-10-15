@@ -6,17 +6,17 @@
         "repositoryURL": "https://github.com/swift-aws/aws-sdk-swift",
         "state": {
           "branch": null,
-          "revision": "ed9cba4149087e19569d470867c73eff4b7ef552",
-          "version": "3.2.0"
+          "revision": "028a16332df2212f82dc64ada4568131844a9e47",
+          "version": "3.3.0"
         }
       },
       {
         "package": "AWSSDKSwiftCore",
         "repositoryURL": "https://github.com/swift-aws/aws-sdk-swift-core",
         "state": {
-          "branch": "yasumoto-5.1",
-          "revision": "516c1df2d523406ff3234334d924f7149a242e2e",
-          "version": null
+          "branch": null,
+          "revision": "14dc7e963b9889c57395cb280f634540da189501",
+          "version": "3.4.0"
         }
       },
       {
@@ -51,8 +51,8 @@
         "repositoryURL": "https://github.com/vapor/fluent",
         "state": {
           "branch": null,
-          "revision": "b915c321c6f9e83743ee5efa35a30895e1b02e51",
-          "version": "3.2.0"
+          "revision": "783819d8838d15e1a05b459aa0fd1bde1e37ac26",
+          "version": "3.2.1"
         }
       },
       {

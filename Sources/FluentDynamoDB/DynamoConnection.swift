@@ -77,18 +77,18 @@ extension DynamoConnection: DatabaseQueryable {
             case .get:
                 let inputItem = DynamoDB.GetItemInput(
                     key: requestedKey, tableName: query.table)
-                return try self.handle.getItem(inputItem).map { output in
+                return self.handle.getItem(inputItem).map { output in
                     return try handler(Output(attributes: output.item))
                 }
             case .set:
                 let inputItem = DynamoDB.PutItemInput(item: requestedKey, returnValues: .allOld, tableName: query.table)
-                return try self.handle.putItem(inputItem).map { output in
+                return self.handle.putItem(inputItem).map { output in
                     return try handler(Output(attributes: output.attributes))
                 }
             case .delete:
                 let inputItem = DynamoDB.DeleteItemInput(
                     key: requestedKey, returnValues: .allOld, tableName: query.table)
-                return try self.handle.deleteItem(inputItem).map { output in
+                return self.handle.deleteItem(inputItem).map { output in
                     return try handler(DynamoValue(attributes: output.attributes))
                 }
             case .filter:
@@ -129,7 +129,7 @@ extension DynamoConnection: DatabaseQueryable {
                 // Note that DynamoDB allows batch operations to query multiple items. For simplicity, we're
                 // always assuming we're querying one table at a time. We will always check the response for
                 // the table name we've specified in the query itself.
-                return try self.handle.batchGetItem(batchInput).map { (output: DynamoDB.BatchGetItemOutput) -> [DynamoValue] in
+                return self.handle.batchGetItem(batchInput).map { (output: DynamoDB.BatchGetItemOutput) -> [DynamoValue] in
                     guard let values: [[String : DynamoDB.AttributeValue]] = output.responses?[query.table] else { return [DynamoValue]() }
                     return values.map { DynamoValue(attributes: $0) }
                 }
@@ -145,7 +145,7 @@ extension DynamoConnection: DatabaseQueryable {
                     indexName: query.index,
                     keyConditionExpression: query.keyConditionExpression,
                     tableName: query.table)
-                return try self.handle.query(queryInput).map { (output: DynamoDB.QueryOutput) in
+                return self.handle.query(queryInput).map { (output: DynamoDB.QueryOutput) in
                     return output.items?.compactMap { (item: [String: DynamoDB.AttributeValue]) -> DynamoValue in
                         return DynamoValue(attributes: item)
                     } ?? [DynamoValue]()
